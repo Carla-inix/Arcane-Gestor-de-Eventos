@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import suscripcion
 
 
 tiempo_actual = datetime.now()
@@ -11,14 +12,12 @@ juegos_reservados = set()
 # FUNCIONES AUXILIARES
 # ===============================
 
-
 def obtener_horas_dispo(fecha):
     horas_disponibles = []
 
     for h in range(9, 23):  # 9:00 a 22:00
         inicio = fecha.replace(hour=h, minute=0)
         fin = inicio + timedelta(hours=1)
-
 
         ocupada = False
         for reserva in reservas_activas:
@@ -40,17 +39,15 @@ def pedir_numero(mensaje, minimo=1, maximo=None):
             return 'atras'
 
         if valor.startswith('0') and len(valor) > 1:
-            print('No se permiten ceros al inicio')
+            print('\nNo se permiten ceros al inicio')
             continue
 
         try:
             num = int(valor)
 
-
             if num < minimo:
                 print(f'Mínimo {minimo}')
                 continue
-
 
             if maximo is not None and num > maximo:
                 print(f'Máximo {maximo}')
@@ -62,79 +59,70 @@ def pedir_numero(mensaje, minimo=1, maximo=None):
             print('Ingresa un número válido')
 
 
-
 def pedir_duracion(hora_inicio, horas_disponibles):
     while True:
-        horas = pedir_numero('Cuántas horas? (1–5): ', 1, 5)
+        horas = pedir_numero('Cuántas horas reservará? (1-5): ', 1, 5)
         if horas == 'atras':
             return None
-
 
         if hora_inicio + horas > 23:
             print('El horario excede las 23:00')
             continue
-
 
         horas_necesarias = range(hora_inicio, hora_inicio + horas)
         if not all(h in horas_disponibles for h in horas_necesarias):
             print('Esa duración invade un horario no disponible')
             continue
 
-
         return horas
 
 
-
-def selecc_juegos(juegos_consola):
+def selecci_juegos(juegos_consola):
     while True:
-        print('\nElije hasta 5 juegos:')
+        print('\nElije hasta 5 juegos:\n')
         disponibles = [
             juego for i, juego in enumerate(juegos_consola)
             if i not in juegos_reservados
         ]
 
-
         if not disponibles:
-            print('No quedan juegos disponibles')
+            print('\nNo quedan juegos disponibles')
             return []
-
 
         for i, juego in enumerate(disponibles, 1):
             print(f'{i}. {juego}')
 
-
-        selecc_j = input('Escribe los números separados por coma o atras para volver: ').strip()
+        selecc_j = input('\nEscribe los numeros separados por coma o atras para volver: ').strip()
         if selecc_j.lower() == 'atras':
             return None
-
+        
+        # Prohibir ceros iniciales
+        if any(x.startswith('0') and len(x) > 1 for x in selecc_j.split(',')):
+            print('\nNo se permiten ceros al inicio')
+            continue
 
         partes = [x.strip() for x in selecc_j.split(',')]
         if any(not x.isdigit() for x in partes):
-            print('Entrada inválida')
+            print('\nEntrada inválida')
             continue
-
 
         idxs = [int(x) - 1 for x in partes]
         if any(i < 0 or i >= len(disponibles) for i in idxs):
-            print('Número fuera de rango')
+            print('\nElige una de la opciones disponibes')
             continue
-
 
         if len(set(idxs)) != len(idxs):
-            print('No repitas juegos')
+            print('\nNo repitas juegos')
             continue
-
 
         if len(idxs) > 5:
             print('Máximo 5 juegos')
             continue
 
-
         seleccionados = []
         for i in idxs:
             idx_global = juegos_consola.index(disponibles[i])
             seleccionados.append(idx_global)
-
 
         juegos_reservados.update(seleccionados)
         return [juegos_consola[i] for i in seleccionados]
@@ -144,89 +132,92 @@ def selecc_juegos(juegos_consola):
 # ===============================
 
 salas = [
-    {'nombre': 'Sala 1: Consolas', 'descripcion': 'Esta sala cuenta con dos PlayStation 5 y está condicionada para que tengas una excelente partida.', 'max_personas': 8, 'max_sillas': 8, 'max_sofas': 2, 'max_mandos': 4},
-    {'nombre': 'Sala 2: Consolas', 'descripcion': 'Esta sala cuenta con dos PlayStation 5 y está condicionada para que tengas una excelente partida.', 'max_personas': 8, 'max_sillas': 8, 'max_sofas': 2, 'max_mandos': 4},
-    {'nombre': 'Sala 3: PCs', 'descripcion': 'Esta sala cuenta con tres computadoras listas para su disfrute. Tienen servicio a internet ilimitado y una gran variedad de videojuegos',  'max_personas': 6, 'max_sillas': 6, 'max_audifonos': 6},
-    {'nombre': 'Sala 4: Realidad Virtual', 'descripcion': 'Esta sala cuenta con cuatro equipos de realidad virtual de gran inmersión para que la pases en grande.\nEstos son:\n- Dos RV Cooperativo de exploración y combate\n- RV de carreras\n- RV simulador de atracciones', 'max_personas': 6, 'max_mandos_rv': 6, 'max_visores_rv': 5, 'max_caminadora_rv': 3}
+    {'nombre': 'Sala 1: Consolas', 'descripcion': 'Esta sala cuenta con dos PlayStation 5 y está condicionada para que tengas una excelente partida.', 'max_personas': 8, 'max_mandos': 4, 'disponible': True},
+    {'nombre': 'Sala 2: Consolas', 'descripcion': 'Esta sala cuenta con dos PlayStation 5 y está condicionada para que tengas una excelente partida.', 'max_personas': 8, 'max_mandos': 4, 'disponible': True},
+    {'nombre': 'Sala 3: PCs', 'descripcion': 'Esta sala cuenta con tres computadoras listas para su disfrute. Tienen servicio a internet ilimitado y una gran variedad de videojuegos ??',  'max_personas': 6, 'max_audifonos': 6, 'disponible': True},
+    {'nombre': 'Sala 4: Realidad Virtual', 'descripcion': 'Esta sala cuenta con tres equipos de realidad virtual de gran inmersión para que la pases en grande.\nEstos son:\n- RV Cooperativo de exploración y combate\n- RV de carreras\n- RV simulador de atracciones', 'max_personas': 6, 'max_mandos_rv': 3, 'max_visores_rv': 5, 'disponible': True}
 ]
-
 
 juegos_consola = [
-    'Hollow Knight', 'Stardew Valley', 'Clair Obscur: Expedition 33', 'Call of Duty',
-    'Undertale', 'It Takes Two', 'Mortal Kombat 11', 'Overcooked', 'The Quarry', 'The Last of Us'
+    'Hollow Knight', 'Stardew Valley', 'Clair Obscur: Expedition 33',
+    'Call of Duty', 'Undertale', 'It Takes Two',
+    'Mortal Kombat 11', 'Overcooked', 'The Quarry', 'The Last of Us'
 ]
-
 
 # FUNCIÓN PRINCIPAL
 # ===============================
 
-
 def reservar():
     while True:
-        print('\nSalas disponibles:')
+        print('\n\tSalas disponibles:\n')
         for i, sala in enumerate(salas, 1):
             estado = '(Reservada)' if not sala['disponible'] else ''
             print(f'{i}. {sala['nombre']} {estado}')
         print('Atras')
 
-
-        selecc = input('Selecciona una sala: ').lower()
+        selecc = input('\nSelecciona una sala: ').lower()
         if selecc == 'atras':
             return
-
+        
+        if selecc.startswith('0') and len(selecc) > 1:
+            print('\nNo se permiten ceros al inicio')
+            continue
 
         try:
-            sala = salas[int(selecc) - 1]
-        except:
+            num = int(selecc)
+            if num < 1 or num > len(salas):
+                print(f'\nOpcion inválida')
+                continue
+            sala = salas[num - 1]
+        except ValueError:
             print('Opción inválida')
             continue
 
-
         if not sala['disponible']:
-            print('Sala no disponible')
+            print('\nSala no disponible')
             continue
+        
+        
+        print(f'\n    {sala['nombre']}\n')
+        print(sala['descripcion'])
+        print('\nAtras\n')
 
-
-        #Personas
-        personas = pedir_numero('Cuántas personas?: ', 1, sala['max_personas'])
+        personas = pedir_numero(f'Cuántas personas asistirán? Máximo son {sala['max_personas']}: ', minimo=1, maximo=sala['max_personas'])
         if personas == 'atras':
             continue
-
-        # Mandos / audifonos / visores
+        
+        # Mandos / audífonos / visores
         if 'Consolas' in sala['nombre']:
-            mandos = pedir_numero(f'Cuantos mandos usaran? Maximo {sala['max_mandos']}: ', minimo=1, maximo=sala['max_mandos'])
+            mandos = pedir_numero(f'Cuántos mandos usarán? Máximo {sala['max_mandos']}: ', minimo=1, maximo=sala['max_mandos'])
             if mandos == 'atras':
+                
                 continue
-            
         elif 'PCs' in sala['nombre']:
-            audifonos = pedir_numero(f'Cuantos audífonos usaran? Maximo {sala['max_audifonos']}: ', minimo=1, maximo=sala['max_audifonos'])
+            audifonos = pedir_numero(f'Cuántos audífonos usarán? Máximo {sala['max_audifonos']}: ', minimo=1, maximo=sala['max_audifonos'])
             if audifonos == 'atras':
                 continue
             
         elif 'Realidad Virtual' in sala['nombre']:
-            mandos_rv = pedir_numero(f'Cuantos mandos RV usaran? Maximo {sala['max_mandos_rv']}: ', minimo=1, maximo=sala['max_mandos_rv'])
+            mandos_rv = pedir_numero(f'Cuántos mandos RV usarán? Máximo {sala['max_mandos_rv']}: ', minimo=1, maximo=sala['max_mandos_rv'])
             if mandos_rv == 'atras':
                 continue
-            visores_rv = pedir_numero(f'Cuantos visores RV usaran? Maximo {sala['max_visores_rv']}: ', minimo=1, maximo=sala['max_visores_rv'])
+            
+            visores_rv = pedir_numero(f'Cuántos visores RV usarán? Máximo {sala['max_visores_rv']}: ', minimo=1, maximo=sala['max_visores_rv'])
             if visores_rv == 'atras':
                 continue
 
-
         juegos = []
         if 'Consolas' in sala['nombre']:
-            juegos = selecc_juegos(juegos_consola)
+            juegos = selecci_juegos(juegos_consola)
             if juegos is None:
                 continue
-
 
         hoy = datetime.now()
         print('\nFechas disponibles:')
         for i in range(16):
             print(f'{i+1}. {(hoy + timedelta(days=i)).strftime('%Y-%m-%d')}')
 
-
-        selecc_f = pedir_numero('Selecciona fecha: ', 1, 16)
-        
+        selecc_f = pedir_numero('Selecciona la fecha: ', 1, 16)
         if selecc_f == 'atras':
             continue
 
@@ -234,14 +225,12 @@ def reservar():
         horas_disp = obtener_horas_dispo(fecha)
 
         if not horas_disp:
-            print('No hay horarios disponibles')
+            print('No hay horarios disponibles.')
             continue
 
-
-        print('\nHorarios disponibles:')
+        print('\n\tHorarios disponibles:')
         for i, h in enumerate(horas_disp, 1):
             print(f'{i}. {h:02d}:00')
-
 
         selecc_h = pedir_numero('Hora de inicio: ', 1, len(horas_disp))
         if selecc_h == 'atras':
@@ -255,41 +244,55 @@ def reservar():
             continue
 
         fin = inicio + timedelta(hours=horas)
-        costo = horas * 1000
+        costo_base = horas * 1000
 
+        precio_final = costo_base
+        descuento_aplicado = False
 
-        print(f'\nCosto total: {costo}$')
+        if suscripcion.cupon_disponible and not suscripcion.cupon_usado:
+            descuento = costo_base * 0.20
+            precio_final -= descuento
+            descuento_aplicado = True
+
+            suscripcion.cupon_usado = True
+            suscripcion.cupon_disponible = False
+
+            print(f'Cupón aplicado: -{descuento}$')
+
+        else:
+            print(f'\nCosto total: {costo_base}$')
         
         while True:
+            
             confirmar = input('\nConfirmar reserva? si/no: ').strip().lower()
             
             if confirmar in ['si']:
-                print('\nReserva realizada con exito!')
-                
-                #Guardar la reserva
-                reserva = {
+                print('\nReserva realizada con éxito!')
+
+                reservas_activas.append({
+                    'usuario': suscripcion.user_actual,
                     'sala': sala,
                     'inicio': inicio,
                     'fin': fin,
                     'horas': horas,
-                    'juegos': juegos,
                     'personas': personas,
-                }
-                reservas_activas.append(reserva)
-                
+                    'juegos': juegos,
+                    'descuento': descuento_aplicado,
+                })
+
                 sala['disponible'] = False
                 return
             
             elif confirmar in ['no']:
-                print('Reserva cancelada. Volviendo al menu principal...')
+                print('\nReserva cancelada')
                 return
-            
+                
             else:
                 print('\nRespuesta invalida. Escribe si o no')
                 
                 
-#FUNCION DE SIMULACION
-#=================================
+#FUNCION DE SIMULACION (TEST)
+#=======================================
                 
 def avanzar_tiempo (horas=1):
     global tiempo_actual
@@ -299,7 +302,7 @@ def avanzar_tiempo (horas=1):
     #Chequear reservas terminadas
     terminadas = []
     for reserva in reservas_activas[:]:
-        if tiempo_actual >= reserva['hora_fin']:
+        if tiempo_actual >= reserva['fin']:
             reserva['sala']['disponible'] = True
             
             #Liberar juegos de consolas
@@ -315,9 +318,9 @@ def avanzar_tiempo (horas=1):
         reservas_activas.remove(t)
         
     if terminadas:
-        print(f'Se liberaron {len(terminadas)} reservas automaticamente')
+        print(f'\nSe liberaron {len(terminadas)} reservas automaticamente')
     else:
-        print('No hay reservas que hayan terminado aun')
+        print('\nNo hay reservas que hayan terminado aun')
         
 def reset_tiempo():
     global tiempo_actual, reservas_activas, juegos_reservados
@@ -326,4 +329,4 @@ def reset_tiempo():
     juegos_reservados.clear()
     for sala in salas:
         sala['disponible'] = True
-    print('Tiempo y reservas reseteados')
+    print('\nSistemas reiniciados')

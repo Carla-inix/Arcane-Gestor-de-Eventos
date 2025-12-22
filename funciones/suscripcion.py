@@ -1,11 +1,14 @@
 usuarios = {}
 suscrito = False
-user_actual = None
+user_actual = None #para saber quien esta logueado
+cupon_disponible = False
+cupon_usado = False
 
 def suscrip ():
     global suscrito, user_actual
     
     while True:
+        print('\nVamos a registrarte..')
         nombre = input('Nombre: ').strip()
         if not nombre:
             print('Tu nombre no puede estar vacio')
@@ -22,17 +25,17 @@ def suscrip ():
         if id_user in usuarios:
             print('Ese ID ya existe, ingrese otro')
             continue
+        
             #Guarda los datos en el diccionario
         usuarios[id_user] = nombre
         suscrito = True
-        user_actual = id_user
-        print('Ya estas suscrito!!')
+        user_actual = id_user  #guarda quien se logueo
+        print('\nYa estas suscrito!!')
         
-        print('[DEBUG] susc despues de asignar', suscrito)
         return True
+   
         
 #Cancelar Suscripcion
-
 def canc_suscrip():
     global suscrito, user_actual
     
@@ -45,7 +48,6 @@ def canc_suscrip():
                 user_actual = None
                 print('Suscripcion Cancelada')
                 return True
-            
             else:
                 print('ID no encontrado')
         except ValueError:
@@ -56,7 +58,12 @@ def menu_suscrip():
     if suscrito:
         
         while True:
+            nombre = usuarios.get(user_actual, 'Desconocido')
+            
             print('\n\tSuscrito\n')
+            print(f'Usuario: {nombre}')
+            print(f'ID: {user_actual}\n')
+            
             print('1. Cancelar Suscripcion')
             print('2. Atras')
             selecc = input('Elige una opcion: ').strip()
@@ -65,9 +72,10 @@ def menu_suscrip():
                 if canc_suscrip():
                     return
                 else:
-                    print('No se pudo cancelar')
+                    print('\nNo se pudo cancelar')
             elif selecc == '2':
                 print('\nVolviendo al menu principal...')
                 return
             else:
-                print('Opcion invalida, elige 1 o 2')
+                print('Opcion invalida. Elige 1 o 2')
+                   
