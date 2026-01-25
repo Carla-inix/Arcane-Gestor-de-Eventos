@@ -8,11 +8,11 @@ import ofertas
 MODO_DEBUG = True
 
 def mostrar_hora_actual():
-    print(f'\nHora actual: {tiempo_actual.strftime('%Y-%m-%d | %H:%M')}')
+    print(f'\nFecha y hora: {tiempo_actual.strftime('%d-%m-%Y | %H:%M')}')
     
 def mostrar_encabezado():
     print('\n' + '=' * 40)
-    print('           ARCANE GAMING LOUNGE')
+    print('         Arcane Gaming Lounge')
     print('=' * 40)
     print('Horario: 09:00 AM - 11:00 PM')
     print('Contacto: arcane@gaming.com | Tel: +53 53529701')
@@ -30,13 +30,12 @@ def menu_principal():
         print('3. Comprar Juegos')
         print('4. Suscripción')
         print('5. Ofertas')
+        print('6. Salir')
         
         if MODO_DEBUG:
-           print('6. Avanzar Tiempo (Modo Prueba)')
-           
-        print('7. Salir')
+            print('7. Avanzar Tiempo (Modo Prueba)')
 
-        selecc = input('\nElige una opcion: ')
+        selecc = input('\nElige una opción: ')
         if selecc == '1':
             if suscripcion.suscrito:
                 reservar()
@@ -48,10 +47,7 @@ def menu_principal():
                     reservar()
                     
         elif selecc == '2':
-            if suscripcion.user_actual is None:
-                print('Debes suscribirte primero')
-            else:
-                mis_reservas.reservas_usuario()
+            mis_reservas.reservas_usuario()
                     
         elif selecc == '3':
             if suscripcion.suscrito:
@@ -72,13 +68,17 @@ def menu_principal():
                     
         elif selecc == '5':
             ofertas.mostrar_ofertas()
+            
+        elif selecc == '6':
+           print('Hasta pronto')
+           break
         
-        elif selecc == '6' and MODO_DEBUG:
+        elif selecc == '7' and MODO_DEBUG:
             while True:
                 print('\nMODO PRUEBA / SIMULACIÓN')
                 print('1. Avanzar tiempo')
                 print('2. Resetear tiempo y reservas')
-                print('3. Atras')
+                print('3. Atrás')
 
                 opcion_test = input('Elige una opción: ').strip()
 
@@ -107,10 +107,7 @@ def menu_principal():
                 else:
                     print('Opción inválida')
                       
-        elif selecc == '7':
-           print('Hasta pronto')
-           break
         else:
-            print('Opcion invalida. Elige 1-7')
+            print('Opción inválida. Elige 1-7')
     
 menu_principal()

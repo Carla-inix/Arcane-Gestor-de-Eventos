@@ -15,19 +15,19 @@ def mostrar_ofertas():
     print('\n   Ofertas Disponibles\n')
 
     if suscripcion.user_actual is None:
-        print('Debes iniciar sesión o suscribirte')
+        print('Debes suscribirte primero')
         input('\nPresiona Enter para volver...')
         return
 
     total = contar_reservas_usuario(suscripcion.user_actual)
 
-    print('Ofertas activas:')
+    print('Cupón para nuevos usuarios:')
     print('Reserva 5 veces y obtén un cupón del 20% de descuento\n')
 
     print(f'Reservas realizadas: {total}')
 
     if suscripcion.cupon_usado:
-        print('Cupón ya utilizado')
+        print('Cupón utilizado')
     elif total >= 5:
         suscripcion.cupon_disponible = True
         print('Cupón DISPONIBLE (20%)')
